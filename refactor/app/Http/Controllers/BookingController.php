@@ -35,42 +35,38 @@ class BookingController extends Controller
      */
     public function index(Request $request)
     {
-        if($user_id = $request->get('user_id')) {
-
-            $response = $this->repository->getUsersJobs($user_id);
-
-        }
-        elseif($request->__authenticatedUser->user_type == env('ADMIN_ROLE_ID') || $request->__authenticatedUser->user_type == env('SUPERADMIN_ROLE_ID'))
-        {
-            $response = $this->repository->getAll($request);
+        if (auth()->user()->isAdmin() || auth()->user()->isSuperAdmin()) {
+            return response()->json($this->repository->getAll($request));
         }
 
-        return response($response);
+        if ($request->has('user_id')) {
+            return response()->json($this->repository->getUsersJobs($request->get('user_id')));
+        }
+
+
+        return response()->json([]);
     }
 
     /**
      * @param $id
      * @return mixed
      */
-    public function show($id)
+    public function show(Job $job)
     {
-        $job = $this->repository->with('translatorJobRel.user')->find($id);
+        $job = Job::load('translatorJobRel.user');
 
-        return response($job);
+        return response()->json($job);
     }
 
     /**
      * @param Request $request
      * @return mixed
      */
-    public function store(Request $request)
+    public function store(StoreBookingRequest $request)
     {
-        $data = $request->all();
+        $response = $this->repository->store(auth()->user(), $request->validated());
 
-        $response = $this->repository->store($request->__authenticatedUser, $data);
-
-        return response($response);
-
+        return response()->json($response);
     }
 
     /**
@@ -78,13 +74,11 @@ class BookingController extends Controller
      * @param Request $request
      * @return mixed
      */
-    public function update($id, Request $request)
+    public function update($id, UpdateBookingRequest $request)
     {
-        $data = $request->all();
-        $cuser = $request->__authenticatedUser;
-        $response = $this->repository->updateJob($id, array_except($data, ['_token', 'submit']), $cuser);
+        $response = $this->repository->updateJob($id, $request->except(['_token', 'submit']), auth()->user());
 
-        return response($response);
+        return response()->json($response);
     }
 
     /**
@@ -107,7 +101,7 @@ class BookingController extends Controller
      */
     public function getHistory(Request $request)
     {
-        if($user_id = $request->get('user_id')) {
+        if ($user_id = $request->get('user_id')) {
 
             $response = $this->repository->getUsersJobsHistory($user_id, $request);
             return response($response);
@@ -165,7 +159,6 @@ class BookingController extends Controller
         $response = $this->repository->endJob($data);
 
         return response($response);
-
     }
 
     public function customerNotCall(Request $request)
@@ -175,7 +168,6 @@ class BookingController extends Controller
         $response = $this->repository->customerNotCall($data);
 
         return response($response);
-
     }
 
     /**
@@ -217,12 +209,12 @@ class BookingController extends Controller
         }
 
         if ($data['flagged'] == 'true') {
-            if($data['admincomment'] == '') return "Please, add comment";
+            if ($data['admincomment'] == '') return "Please, add comment";
             $flagged = 'yes';
         } else {
             $flagged = 'no';
         }
-        
+
         if ($data['manually_handled'] == 'true') {
             $manually_handled = 'yes';
         } else {
@@ -248,7 +240,6 @@ class BookingController extends Controller
         if ($admincomment || $session || $flagged || $manually_handled || $by_admin) {
 
             $affectedRows1 = Job::where('id', '=', $jobid)->update(array('admin_comments' => $admincomment, 'flagged' => $flagged, 'session_time' => $session, 'manually_handled' => $manually_handled, 'by_admin' => $by_admin));
-
         }
 
         return response('Record updated!');
@@ -290,5 +281,4 @@ class BookingController extends Controller
             return response(['success' => $e->getMessage()]);
         }
     }
-
 }
