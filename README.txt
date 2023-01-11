@@ -1,45 +1,27 @@
-Do at least ONE of the following tasks: refactor is mandatory. Write tests is optional, will be good bonus to see it. 
-Please do not invest more than 2-4 hours on this.
-Upload your results to a Github repo, for easier sharing and reviewing.
-
-Thank you and good luck!
+The code business logic was okay, but in terms of readability and maintainability there are so much things needs to adjust.
+Below are the list of refactoring that can be apply to make the code more readable and to maintain
 
 
+# Controller
+1. make use of laravel Helpers like auth(), response()
+2. use route model binding like on show() method of controller
+3. always validate request by making use of custom request class for validation
+4. instead of plain array, use API Resource class in returning response on controller methods
+5. Alway stick to 5 API resource method (index, show, store, update and delete)
+6. Create Service or Action class to move other logic there, controller needs to have single responsibility which is consuming other class to output the needed response
 
-Code to refactor
-=================
-1) app/Http/Controllers/BookingController.php
-2) app/Repository/BookingRepository.php
-
-Code to write tests (optional)
-=====================
-3) App/Helpers/TeHelper.php method willExpireAt
-4) App/Repository/UserRepository.php, method createOrUpdate
-
-
-----------------------------
-
-What I expect in your repo:
-
-X. A readme with:   Your thoughts about the code. What makes it amazing code. Or what makes it ok code. Or what makes it terrible code. How would you have done it. Thoughts on formatting, structure, logic.. The more details that you can provide about the code (what's terrible about it or/and what is good about it) the easier for us to assess your coding style, mentality etc
-
-And 
-
-Y.  Refactor it if you feel it needs refactoring. The more love you put into it. The easier for us to asses your thoughts, code principles etc
+# Refactoring
+1. dont acceing the env value (env()) directly instead use config file (config())
+2. instead of plain curl, use the HTTP client of the laravel to maximize other feature
+3. instead of static class like TeHelper.php, use the facades patter to make it more flexible and readable
+4. instead of doing query builder on different area of the codes, you can use QueryObjects or put it on model as scope queries
 
 
-IMPORTANT: Make two commits. First commit with original code. Second with your refactor so we can easily trace changes. 
-
-
-NB: you do not need to set up the code on local and make the web app run. It will not run as its not a complete web app. This is purely to assess you thoughts about code, formatting, logic etc
-
-
-===== So expected output is a GitHub link with either =====
-
-1. Readme described above (point X above) + refactored code 
-OR
-2. Readme described above (point X above) + refactored core + a unit test of the code that we have sent
-
-Thank you!
-
-
+# Readability Purposes:
+1. inside if condition use fluent interface instead of using conditional operators
+2. Create Service or Action class to move other logic there and to make the logic reusable
+3. make the code more readable by using fluent interface.
+4. Create DataTransferObject or Plain Old PHP Object to pass parameters on methods if the parameters are more than 3
+5. for alot of cases on the switch statement, you can use array (key => value pair) or use the latest match() function
+6. always type hint parameters and function / method return value
+7. Don't ever use magic number or plain string on assigning value, instead use contants or enums to have centralized placed for those values
